@@ -8,6 +8,34 @@
 
 #import "ViewController.h"
 
+@interface OnlyIntegerValueFormatter : NSNumberFormatter
+
+@end
+
+@implementation OnlyIntegerValueFormatter
+
+- (BOOL)isPartialStringValid:(NSString*)partialString newEditingString:(NSString**)newString errorDescription:(NSString**)error
+{
+    if([partialString length] == 0) {
+        return YES;
+    }
+    
+    NSScanner* scanner = [NSScanner scannerWithString:partialString];
+    
+    if(!([scanner scanInt:0] && [scanner isAtEnd])) {
+        NSBeep();
+        return NO;
+    }
+    
+    return YES;
+}
+
+@end
+
+@interface ViewController () <NSTextFieldDelegate>
+
+@end
+
 @implementation ViewController
 
 - (void)viewDidLoad {
@@ -15,10 +43,45 @@
 
     // Do any additional setup after loading the view.
     
+    OnlyIntegerValueFormatter *formatter = [[OnlyIntegerValueFormatter alloc] init];
+    [self.leftField setFormatter:formatter];
+    [self.topField setFormatter:formatter];
+    
+    self.leftField.delegate = self;
+    self.topField.delegate = self;
+    
+    NSInteger topOffset = [[NSUserDefaults standardUserDefaults] integerForKey:@"topOffset"];
+    if (topOffset > 0) {
+        [self.topField setIntegerValue:topOffset];
+    }
+    
+    NSInteger leftOffset = [[NSUserDefaults standardUserDefaults] integerForKey:@"leftOffset"];
+    if (leftOffset > 0) {
+        [self.leftField setIntegerValue:leftOffset];
+    }
+    
     [self.popupButton setAction:@selector(popupButtonChanged:)];
     [self.popupButton setTarget:self];
     
     [self populateAppsList:nil];
+}
+
+- (void)viewDidAppear {
+    [super viewDidAppear];
+    
+    [self.view.window setLevel:NSFloatingWindowLevel];
+}
+
+- (void)controlTextDidChange:(NSNotification *)notification {
+    NSTextField *textField = [notification object];
+    NSInteger val = [textField integerValue];
+    
+    if (textField == self.leftField) {
+        [[NSUserDefaults standardUserDefaults] setInteger:val forKey:@"leftOffset"];
+    }
+    else if (textField == self.topField) {
+        [[NSUserDefaults standardUserDefaults] setInteger:val forKey:@"topOffset"];
+    }
 }
 
 - (IBAction)popupButtonChanged:(NSPopUpButton*)sender {
@@ -55,23 +118,24 @@
     [self popupButtonChanged:self.popupButton];
 }
 
-
 - (void)setRepresentedObject:(id)representedObject {
     [super setRepresentedObject:representedObject];
 
     // Update the view, if already loaded.
 }
 
-
 - (IBAction)bringItBack:(id)sender {
     NSString *appName = self.popupButton.selectedItem.title;
+    
+    NSInteger topOffset = [[NSUserDefaults standardUserDefaults] integerForKey:@"topOffset"];
+    NSInteger leftOffset = [[NSUserDefaults standardUserDefaults] integerForKey:@"leftOffset"];
     
     NSString *source = [NSString stringWithFormat:@"\
                         tell application \"%@\" \n \
                             reopen \n \
                             \
-                            set xOffset to 50 \n \
-                            set yOffset to 50 \n \
+                            set xOffset to %ld \n \
+                            set yOffset to %ld \n \
                             \n \
                             repeat with win in windows \n \
                                 set theBounds to (bounds of win) \n \
@@ -96,10 +160,10 @@
                             activate \n \
                         end tell \n \
                         \
-                        tell application \"%@\" to activate \
-                        ", appName, [[NSProcessInfo processInfo] processName]];
+                        ", appName, (long)leftOffset, (long)topOffset, [[NSProcessInfo processInfo] processName]];
     
     NSAppleScript *appleScript = [[NSAppleScript alloc] initWithSource:source];
     [appleScript executeAndReturnError:nil];
 }
+
 @end

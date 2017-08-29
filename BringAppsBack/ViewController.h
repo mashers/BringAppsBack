@@ -11,6 +11,8 @@
 @interface ViewController : NSViewController
 
 @property (weak) IBOutlet NSPopUpButton *popupButton;
+@property (weak) IBOutlet NSTextField *leftField;
+@property (weak) IBOutlet NSTextField *topField;
 
 - (IBAction)bringItBack:(id)sender;
 
