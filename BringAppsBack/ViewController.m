@@ -163,7 +163,16 @@
                         ", appName, (long)leftOffset, (long)topOffset, [[NSProcessInfo processInfo] processName]];
     
     NSAppleScript *appleScript = [[NSAppleScript alloc] initWithSource:source];
-    [appleScript executeAndReturnError:nil];
+    NSDictionary *errorDict = nil;
+    [appleScript executeAndReturnError:&errorDict];
+    
+    if (errorDict) {
+        NSString *error = [errorDict valueForKey:NSAppleScriptErrorMessage];
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setMessageText:@"Error"];
+        [alert setInformativeText:error];
+        [alert beginSheetModalForWindow:self.view.window completionHandler:nil];
+    }
 }
 
 @end
