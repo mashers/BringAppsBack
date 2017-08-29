@@ -15,10 +15,22 @@
 
     // Do any additional setup after loading the view.
     
+    [self.popupButton setAction:@selector(popupButtonChanged:)];
+    [self.popupButton setTarget:self];
+    
     [self populateAppsList:nil];
 }
 
+- (IBAction)popupButtonChanged:(NSPopUpButton*)sender {
+    [[NSUserDefaults standardUserDefaults] setValue:sender.titleOfSelectedItem forKey:@"lastSelectedApp"];
+}
+
 - (IBAction)populateAppsList:(id)sender {
+    [self.popupButton removeAllItems];
+    
+    NSString *lastSelectedApp = [[NSUserDefaults standardUserDefaults] valueForKey:@"lastSelectedApp"];
+    NSInteger selectedIndex = 0;
+    
     NSMutableArray *apps = [NSMutableArray array];
     NSString *currentAppName = [[NSProcessInfo processInfo] processName];
     
@@ -34,7 +46,13 @@
     for (NSRunningApplication *app in apps) {
         [self.popupButton addItemWithTitle:app.localizedName];
         [self.popupButton.itemArray.lastObject setImage:app.icon];
+        if ([app.localizedName isEqualToString:lastSelectedApp]) {
+            selectedIndex = self.popupButton.itemArray.count-1;
+        }
     }
+    
+    [self.popupButton selectItemAtIndex:selectedIndex];
+    [self popupButtonChanged:self.popupButton];
 }
 
 
