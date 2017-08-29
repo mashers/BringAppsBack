@@ -15,21 +15,26 @@
 
     // Do any additional setup after loading the view.
     
-    [self populateAppsList];
+    [self populateAppsList:nil];
 }
 
-- (void)populateAppsList {
-    NSMutableArray *appTitles = [NSMutableArray array];
+- (IBAction)populateAppsList:(id)sender {
+    NSMutableArray *apps = [NSMutableArray array];
+    NSString *currentAppName = [[NSProcessInfo processInfo] processName];
     
     for (NSRunningApplication *app in [[NSWorkspace sharedWorkspace] runningApplications]) {
-        if (app.activationPolicy == NSApplicationActivationPolicyRegular) {
-            [appTitles addObject:app.localizedName];
+        if (app.activationPolicy == NSApplicationActivationPolicyRegular && ![app.localizedName isEqualToString:currentAppName]) {
+            [apps addObject:app];
         }
     }
     
-    [appTitles sortUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"localizedName" ascending:YES selector:@selector(localizedCaseInsensitiveCompare:)];
+    [apps sortUsingDescriptors:@[sortDescriptor]];
     
-    [self.popupButton addItemsWithTitles:appTitles];
+    for (NSRunningApplication *app in apps) {
+        [self.popupButton addItemWithTitle:app.localizedName];
+        [self.popupButton.itemArray.lastObject setImage:app.icon];
+    }
 }
 
 
