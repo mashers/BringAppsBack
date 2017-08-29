@@ -14,6 +14,22 @@
     [super viewDidLoad];
 
     // Do any additional setup after loading the view.
+    
+    [self populateAppsList];
+}
+
+- (void)populateAppsList {
+    NSMutableArray *appTitles = [NSMutableArray array];
+    
+    for (NSRunningApplication *app in [[NSWorkspace sharedWorkspace] runningApplications]) {
+        if (app.activationPolicy == NSApplicationActivationPolicyRegular) {
+            [appTitles addObject:app.localizedName];
+        }
+    }
+    
+    [appTitles sortUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    
+    [self.popupButton addItemsWithTitles:appTitles];
 }
 
 
@@ -25,6 +41,8 @@
 
 
 - (IBAction)bringItBack:(id)sender {
+    NSString *appName = self.popupButton.selectedItem.title;
+    
     NSString *source = [NSString stringWithFormat:@"\
                         tell application \"%@\" \n \
                             reopen \n \
@@ -56,7 +74,7 @@
                         end tell \n \
                         \
                         tell application \"%@\" to activate \
-                        ", self.textField.stringValue, [[NSProcessInfo processInfo] processName]];
+                        ", appName, [[NSProcessInfo processInfo] processName]];
     
     NSAppleScript *appleScript = [[NSAppleScript alloc] initWithSource:source];
     [appleScript executeAndReturnError:nil];

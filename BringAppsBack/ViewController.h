@@ -10,7 +10,7 @@
 
 @interface ViewController : NSViewController
 
-@property (weak) IBOutlet NSTextField *textField;
+@property (weak) IBOutlet NSPopUpButton *popupButton;
 
 - (IBAction)bringItBack:(id)sender;
 
