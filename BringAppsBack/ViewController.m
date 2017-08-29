@@ -160,7 +160,7 @@
                             activate \n \
                         end tell \n \
                         \
-                        ", appName, (long)leftOffset, (long)topOffset, [[NSProcessInfo processInfo] processName]];
+                        ", appName, (long)leftOffset, (long)topOffset];
     
     NSAppleScript *appleScript = [[NSAppleScript alloc] initWithSource:source];
     NSDictionary *errorDict = nil;
